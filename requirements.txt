@@ -1,0 +1,5 @@
+pyTelegramBotAPI==4.34.0
+google-genai
+faster-whisper
+gtts
+python-dotenv
