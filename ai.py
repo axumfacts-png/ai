@@ -32,5 +32,5 @@ def ask_ai(text: str) -> str:
             SYSTEM_PROMPT + "\nUser: " + text
         )
         return response.text.strip()
-    except Exception:
-        return "Sorry Firma, AI error happened."
+    except Exception as e:
+    return f"AI Error: {str(e)}"
