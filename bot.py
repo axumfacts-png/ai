@@ -6,6 +6,7 @@ from ai import get_ai_response
 from stt import transcribe_audio
 from tts import generate_audio
 
+# Configure logging to monitor the bot's health in the Railway dashboard
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize bot
@@ -25,7 +26,7 @@ def handle_text(message):
 def handle_voice(message):
     bot.send_chat_action(message.chat.id, 'record_voice')
     
-    # Define file paths using the chat ID to prevent overwriting if multiple people message at once
+    # Define file paths using the chat ID for concurrency safety
     input_audio_path = f"user_voice_{message.chat.id}.ogg"
     output_audio_path = f"ai_reply_{message.chat.id}.ogg"
     
@@ -63,16 +64,16 @@ def handle_voice(message):
         bot.reply_to(message, "Something went wrong while processing your voice note.")
         
     finally:
-        # 6. Clean up files so your Railway server doesn't run out of storage space
+        # 6. Clean up files to prevent storage overflow
         if os.path.exists(input_audio_path):
             os.remove(input_audio_path)
         if os.path.exists(output_audio_path):
             os.remove(output_audio_path)
 
 if __name__ == '__main__':
-    logging.info("Starting bot... wiping pending updates to prevent 409 conflicts.")
+    logging.info("Starting bot... wiping pending updates to prevent conflicts.")
     
-    # CRITICAL FIX for 409 Conflicts: 
-    # skip_pending=True ignores messages sent while the bot was offline/deploying
-    # timeout=60 keeps the connection alive longer behind Railway's load balancers
-    bot.infinity_polling(skip_pending=True, timeout=60, request_timeout=60)
+    # FIX: 'request_timeout' removed to prevent TypeError.
+    # 'skip_pending=True' ignores backlogged messages from during downtime.
+    # 'timeout=60' maintains a healthy long-polling connection.
+    bot.infinity_polling(skip_pending=True, timeout=60)
