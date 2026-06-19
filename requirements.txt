@@ -1,0 +1,6 @@
+pyTelegramBotAPI==4.34.0
+google-generativeai
+faster-whisper
+gtts
+ffmpeg-python
+python-dotenv
