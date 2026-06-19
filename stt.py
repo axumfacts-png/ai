@@ -1,12 +1,19 @@
-from faster_whisper import WhisperModel
+import whisper
+import logging
 
-model = WhisperModel("base")
+# Load the model into memory ONCE at startup to prevent Railway CPU timeouts
+logging.info("Loading Whisper model (this takes a few seconds)...")
+try:
+    model = whisper.load_model("base")
+except Exception as e:
+    logging.error(f"Failed to load Whisper model: {e}")
 
-def voice_to_text(file_path: str) -> str:
-    segments, _ = model.transcribe(
-        file_path,
-        language=None  # auto-detect Amharic/English
-    )
-
-    text = " ".join([s.text for s in segments])
-    return text.strip()
+def transcribe_audio(file_path: str) -> str:
+    """Takes an audio file path, returns the transcribed text."""
+    try:
+        logging.info(f"Transcribing {file_path}...")
+        result = model.transcribe(file_path)
+        return result["text"]
+    except Exception as e:
+        logging.error(f"Whisper Error: {e}")
+        return ""
