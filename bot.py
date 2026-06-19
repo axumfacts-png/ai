@@ -26,37 +26,35 @@ def handle_text(message):
 def handle_voice(message):
     bot.send_chat_action(message.chat.id, 'record_voice')
     
-    # Define file paths using the chat ID for concurrency safety
     input_audio_path = f"user_voice_{message.chat.id}.ogg"
     output_audio_path = f"ai_reply_{message.chat.id}.ogg"
     
     try:
-        # 1. Download the voice note from Telegram
+        # 1. Download the voice note
         file_info = bot.get_file(message.voice.file_id)
         downloaded_file = bot.download_file(file_info.file_path)
         
         with open(input_audio_path, 'wb') as new_file:
             new_file.write(downloaded_file)
 
-        # 2. Transcribe Audio -> Text
+        # 2. Process Audio
         user_text = transcribe_audio(input_audio_path)
         
         if not user_text.strip():
             bot.reply_to(message, "Sorry, I couldn't hear any words in that audio.")
             return
 
-        # 3. Send Text to Gemini -> Get AI Text
+        # 3. Get AI Response
         ai_reply_text = get_ai_response(user_text)
 
-        # 4. Generate AI Text -> Audio
+        # 4. Generate Voice
         audio_file_path = generate_audio(ai_reply_text, output_audio_path)
 
-        # 5. Send Audio back to user
+        # 5. Send Audio back
         if audio_file_path:
             with open(audio_file_path, 'rb') as audio:
                 bot.send_voice(message.chat.id, audio)
         else:
-            # Fallback if text-to-speech fails
             bot.reply_to(message, ai_reply_text)
 
     except Exception as e:
@@ -64,16 +62,16 @@ def handle_voice(message):
         bot.reply_to(message, "Something went wrong while processing your voice note.")
         
     finally:
-        # 6. Clean up files to prevent storage overflow
         if os.path.exists(input_audio_path):
             os.remove(input_audio_path)
         if os.path.exists(output_audio_path):
             os.remove(output_audio_path)
 
 if __name__ == '__main__':
-    logging.info("Starting bot... wiping pending updates to prevent conflicts.")
+    # This dummy line forces the build system to register a change
+    print("FORCE_REDEPLOY_2026") 
     
-    # FIX: 'request_timeout' removed to prevent TypeError.
-    # 'skip_pending=True' ignores backlogged messages from during downtime.
-    # 'timeout=60' maintains a healthy long-polling connection.
-    bot.infinity_polling(skip_pending=True, timeout=60)
+    logging.info("Starting bot...")
+    
+    # Clean polling configuration
+    bot.infinity_polling(skip_pending=True)
