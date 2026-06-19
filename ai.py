@@ -1,20 +1,20 @@
-from google import genai
+import google.generativeai as genai
 from config import GEMINI_API_KEY
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
+
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 SYSTEM_PROMPT = """
-You are a personal AI assistant for a user named Firma.
-Be friendly, helpful, and support English + Amharic.
-Keep answers short and natural.
+You are a personal AI assistant for Firma.
+Be helpful, friendly, and support English + Amharic.
+Keep responses short.
 """
-
 
 def ask_ai(text: str) -> str:
     try:
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=SYSTEM_PROMPT + "\nUser: " + text
+        response = model.generate_content(
+            SYSTEM_PROMPT + "\nUser: " + text
         )
         return response.text.strip()
 
