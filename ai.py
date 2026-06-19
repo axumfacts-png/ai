@@ -1,23 +1,17 @@
 import google.generativeai as genai
+import logging
 from config import GEMINI_API_KEY
 
+# 1. Configure securely using the correct, stable SDK
 genai.configure(api_key=GEMINI_API_KEY)
 
-model = genai.GenerativeModel("gemini-1.5-flash")
+# 2. Use the fastest, most stable model for chat interactions
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-SYSTEM_PROMPT = """
-You are a personal AI assistant for Firma.
-Be helpful, friendly, and support English + Amharic.
-Keep responses short.
-"""
-
-def ask_ai(text: str) -> str:
+def get_ai_response(prompt: str) -> str:
     try:
-        response = model.generate_content(
-            SYSTEM_PROMPT + "\nUser: " + text
-        )
-        return response.text.strip()
-
+        response = model.generate_content(prompt)
+        return response.text
     except Exception as e:
-        print("GEMINI ERROR:", e)
-        return f"AI Error: {str(e)}"
+        logging.error(f"Gemini API Error: {e}")
+        return "I'm having a bit of trouble connecting to my brain right now. Try again in a moment."
